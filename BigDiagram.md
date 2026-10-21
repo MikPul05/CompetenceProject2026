@@ -231,26 +231,17 @@ flowchart TD
 
 ## I. PostgreSQL
 
-Main Purpose: Serves as the robust relational database persistence layer for flows, detections, configurations, and historical audit records.
+Main Purpose: Serves as the relational persistence layer for alerts and the detection information behind them, written by the Alert & Classification Service and read by the REST API.
 
 Key Sub-components:
-	Ingestion & Simulation Tracking: Relational tables tracking datasets, import jobs, and simulation runs.
-	Flow & Detection Storage: Tables storing network flows, ground-truth labels, detection instances, and detailed evidence.
-	Administrative & Audit Logs: Manages user roles, authorization profiles, security audit trails, and dynamic detection configurations.
+	Alerts Table: Stores each operator-facing alert, which groups one or more related detections (same source and type in consecutive windows).
+	Detections Table: Stores individual detections with their ID, timestamp, type, severity, confidence, source, destination, time window, detection method, and textual explanation.
+	Detection Evidence Table: Stores the key feature values behind each detection, together with the threshold or baseline they were compared against.
 
 ```mermaid
-erDiagram
-    DATASETS ||--o{ IMPORT_JOBS : "imported as"
-    IMPORT_JOBS ||--o{ FLOWS : produces
-    SIMULATION_RUNS ||--o{ FLOWS : produces
-    DATASETS ||--o{ GROUND_TRUTH_LABELS : "labelled by"
-    SIMULATION_RUNS ||--o{ GROUND_TRUTH_LABELS : "labelled by"
-    FLOWS }o--o{ DETECTIONS : "evidence for"
-    DETECTIONS ||--o{ DETECTION_EVIDENCE : has
-    ALERTS ||--o{ DETECTIONS : groups
-    ROLES ||--o{ USERS : assigned
-    USERS ||--o{ AUDIT_LOG : performs
-    USERS ||--o{ DETECTION_CONFIG : updates
+flowchart LR
+    T1["ALERTS"] --> T2["DETECTIONS"]
+    T2 --> T3["DETECTION_EVIDENCE"]
 ```
 
 ## J. REST API (Flask)
